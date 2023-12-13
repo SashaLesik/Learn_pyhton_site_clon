@@ -1,4 +1,4 @@
-from server import app
+from learn_python.AVITO_CLON.Learn_pyhton_site_clon.web_app import app
 # не уверена, что это так делается. 
 
 
