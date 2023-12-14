@@ -7,12 +7,13 @@ import requests
 
 def get_olx(url):
     try:
-        result = requests.get(url)
+        result = requests.get(url, timeout=5)
         result.raise_for_status()
-        return result.text
     except(requests.RequestException, ValueError):
         print('Сетевая ошибка')
         return False
+    return result.text
+        
     
 if __name__ in '__main__':
     html = get_olx('https://www.olx.kz/')
