@@ -1,8 +1,13 @@
 from flask import Flask
-app = Flask(__name__)
 
-import web_app.views
 
+def create_app():
+    app = Flask(__name__)
+    @app.route('/')
+    def index():
+        return 'hello, word'
+    return app
     
-
+    
+    
 
