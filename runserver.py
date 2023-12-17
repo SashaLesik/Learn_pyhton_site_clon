@@ -1,5 +1,6 @@
 from web_app import create_app
 
+
 def parse_to_base():
     """ функция, которая сохраняет данные, полученные после парсинга, в бд"""
 
