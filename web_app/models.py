@@ -1,6 +1,4 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import engine
-from sqlalchemy.orm import sessionmaker
 
 
 db = SQLAlchemy()
@@ -20,7 +18,3 @@ class Olx_site(db.Model):
 
     def __repr__(self):
         return f'<Ads {self.name} {self.content}>'
-
-
-if __name__ == "__main__":
-    db_session = sessionmaker(bind=engine)

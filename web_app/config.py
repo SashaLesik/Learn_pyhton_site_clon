@@ -10,10 +10,9 @@ except KeyError:
     print('не найдена переменная')
     raise
 
-basedir = os.path.abspath(os.path.dirname(__file__))
 DATABASE = 'postgres'
 HOST = 'localhost'
-PORT = '5433'
+PORT = '5432'
 
-SQLALCHEMY_DATABASE_URI = f"postgresql:/// {os.path.join(basedir, '..', 'postgres.db')}"
+SQLALCHEMY_DATABASE_URI = f'postgresql://{DB_USER}:{DB_PASSWORD}@{HOST}:{PORT}/{DATABASE}'
 
