@@ -1,3 +1,4 @@
+
 import os
 from dotenv import load_dotenv
 
@@ -8,3 +9,11 @@ try:
 except KeyError:
     print('не найдена переменная')
     raise
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+DATABASE = 'postgres'
+HOST = 'localhost'
+PORT = '5433'
+
+SQLALCHEMY_DATABASE_URI = f"postgresql:/// {os.path.join(basedir, '..', 'postgres.db')}"
+

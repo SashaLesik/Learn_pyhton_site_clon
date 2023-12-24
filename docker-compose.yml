@@ -1,0 +1,13 @@
+services:
+  
+  pgdb:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: "database_name"
+      POSTGRES_HOST: "pgdb"
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "password"
+    ports:
+      - "5435:5432"

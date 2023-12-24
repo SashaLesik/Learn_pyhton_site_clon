@@ -1,18 +1,26 @@
-from sqlalchemy import Column, Integer, String
-from db_example import Base, engine
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import engine
+from sqlalchemy.orm import sessionmaker
 
 
-class User(Base):
-    __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    salary = Column(Integer)
-    email = Column(String(120), unique=True)
+db = SQLAlchemy()
+
+class Olx_site(db.Model):
+    __tablename__ = 'olx_site'
+    id = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String)
+    ads_name = db.Column(db.String)
+    ads_content = db.Column(db.Text)
+    phone_number = db.Column(db.Integer)
+    seller_name = db.Column(db.String)
+    registration_date = db.Column(db.DateTime, nullable=False)
+    number_of_looks = db.Column(db.Integer)
+    location = db.Column(db.String)
+    picture = db.Column(db.String(120), unique=True)
 
     def __repr__(self):
-        return f'<User {self.name} {self.email}>'
-    
+        return f'<Ads {self.name} {self.content}>'
 
 
 if __name__ == "__main__":
-    Base.metadata.create_all(bind=engine)
+    db_session = sessionmaker(bind=engine)
