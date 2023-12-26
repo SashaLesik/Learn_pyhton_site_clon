@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-class Olx_site(db.Model):
+class Olx_Site(db.Model):
     __tablename__ = 'olx_site'
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String)
