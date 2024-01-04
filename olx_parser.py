@@ -88,7 +88,7 @@ def parser_adt(data, count_error):
             print(f'Дата размещения объявления: {date_posted}')
             print(f'Ссылка на фотографию объявления: {soup_product_jpg}')
             print(f'Название объявления: {soup_product_title}')
-            print(f'Описание объявления: {soup_product_text}')
+            print(f'Описание объявления: {soup_product_text}')  
             print('-----------------------')
   
     except(requests.RequestException, ValueError, AttributeError):
