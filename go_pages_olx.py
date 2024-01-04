@@ -17,11 +17,11 @@ def go_pages(url, count=100):
             response = requests.get(f'{url}{page}', timeout=5)
             response.raise_for_status()
             soup = BeautifulSoup(response.text, 'html.parser')
-            title_str = soup.find('titley').text
+            title_str = soup.find('title').text
             if title_begin == title_str:
                 break
         except(requests.RequestException, ValueError, AttributeError):
-            return False
+            continue
         yield soup
 
 

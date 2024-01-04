@@ -62,7 +62,7 @@ def parser_page(url, count = 100):
 
 
 def parser_adt(data, count_error):
-    try:
+    try:  
         for link in data:
             card_url = link.find('a').get('href')
             response_product = requests.get('https://www.olx.kz' + card_url, timeout=5)
