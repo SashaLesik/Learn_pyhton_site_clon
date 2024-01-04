@@ -51,7 +51,7 @@ def parser_page(url, count = 100):
             soup = BeautifulSoup(response.text, 'lxml')
             title_str = soup.find('title').text
             if title_begin == title_str:
-                break
+                break  
             data = soup.find_all('div', class_='css-1sw7q4x')
             parser_adt(data, count_error)
         except(requests.RequestException, ValueError, AttributeError):
@@ -62,7 +62,7 @@ def parser_page(url, count = 100):
 
 
 def parser_adt(data, count_error):
-    try:  
+    try:    
         for link in data:
             card_url = link.find('a').get('href')
             response_product = requests.get('https://www.olx.kz' + card_url, timeout=5)
