@@ -9,7 +9,7 @@ def get_olx(url):
     try:
         result = requests.get(url, timeout=5)
         result.raise_for_status()
-    except(requests.RequestException, ValueError):
+    except (requests.RequestException, ValueError):
         print('Сетевая ошибка')
         return False
     return result.text

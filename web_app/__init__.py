@@ -1,5 +1,6 @@
 from flask import Flask
 from web_app.models import db
+from flask import render_template
 
 
 def create_app():
@@ -9,5 +10,5 @@ def create_app():
 
     @app.route('/')
     def index():
-        return 'hello, word'
+        return render_template('index.html')
     return app
