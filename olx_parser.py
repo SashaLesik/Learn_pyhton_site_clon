@@ -155,5 +155,5 @@ def parse_published_date(date_time) -> datetime:
     
 
 if __name__ in '__main__':
-    url = 'https://www.olx.kz/zhivotnye/?page='
+    url = 'https://www.olx.kz/zhivotnye/?page=' 
     parser_page(url)
