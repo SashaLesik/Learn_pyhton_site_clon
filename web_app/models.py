@@ -17,7 +17,7 @@ class OlxSite(db.Model):
     registration_date = db.Column(db.DateTime, nullable=False)
     number_of_looks = db.Column(db.Integer)
     location = db.Column(db.String)
-    picture = db.Column(db.String(120), unique=True)
+    picture = db.Column(db.String(120))
 
     def __repr__(self):
         return f'<Ads {self.name} {self.content}>'
