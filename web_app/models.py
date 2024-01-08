@@ -11,7 +11,7 @@ class OlxSite(db.Model):
     category = db.Column(db.String)
     ads_name = db.Column(db.String)
     ads_content = db.Column(db.Text)
-    phone_number = db.Column(db.Integer)
+    phone_number = db.Column(db.String)
     raw_url_num_loc = db.Column(db.String)
     seller_name = db.Column(db.String)
     registration_date = db.Column(db.DateTime, nullable=False)
