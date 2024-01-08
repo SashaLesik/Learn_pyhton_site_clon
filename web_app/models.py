@@ -7,7 +7,7 @@ db = SQLAlchemy()
 class OlxSite(db.Model):
     __tablename__ = 'olx_site'
     id = db.Column(db.Integer, primary_key=True)
-    url = db.Column(db.String)
+    url = db.Column(db.String,  unique = True)
     category = db.Column(db.String)
     ads_name = db.Column(db.String)
     ads_content = db.Column(db.Text)
