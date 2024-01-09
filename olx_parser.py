@@ -1,32 +1,47 @@
+from typing import TypedDict, NotRequired
+
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
+month_mapping = {'январь': 'January',
+                 'февраль': 'February',
+                 'март': 'March',
+                 'апрель': 'April',
+                 'май': 'May',
+                 'июнь': 'June',
+                 'июль': 'July',
+                 'август': 'August',
+                 'сентябрь': 'September',
+                 'октябрь': 'October',
+                 'ноябрь': 'November',
+                 'декабрь': 'December',
+                 'января': 'January',
+                 'февраля': 'February',
+                 'марта': 'March',
+                 'апреля': 'April',
+                 'мая': 'May',
+                 'июня': 'June',
+                 'июля': 'July',
+                 'августа': 'August',
+                 'сентября': 'September',
+                 'октября': 'October',
+                 'ноября': 'November',
+                 'декабря': 'December'}
 
-month_mapping  = {'январь': 'January',
-        'февраль': 'February',
-        'март': 'March',
-        'апрель': 'April',
-        'май': 'May',
-        'июнь': 'June',
-        'июль': 'July',
-        'август': 'August',
-        'сентябрь': 'September',
-        'октябрь': 'October',
-        'ноябрь': 'November',
-        'декабрь': 'December',
-        'января': 'January',
-        'февраля': 'February',
-        'марта': 'March',
-        'апреля': 'April',
-        'мая': 'May',
-        'июня': 'June',
-        'июля': 'July',
-        'августа': 'August',
-        'сентября': 'September',
-        'октября': 'October',
-        'ноября': 'November',
-        'декабря': 'December'}
+class Adv(TypedDict):
+    url: str
+    id: str 
+    ads_name: str
+    ads_content: str
+    phone_number: NotRequired[str]
+    seller_name: str
+    date_registered: datetime
+    date_of_last_visit: datetime
+    date_posted: datetime
+    number_of_looks: NotRequired[int]
+    location: NotRequired[str]
+    picture: str
 
 def translate_month_to_en(ru_month_name: str) -> str:
     # Функция перевода месяца с RU на EN
@@ -34,77 +49,88 @@ def translate_month_to_en(ru_month_name: str) -> str:
 
 
 def parser_page(url):
-    for page_num in range(1,26): 
-        category_page_html = request_html(url=f'{url}{page_num}') 
-        adt_urls = extract_adt_urls(category_page_html) 
-        for adt_url in adt_urls: 
-            yield parser_adt(adt_url)
+    for page_num in range(1, 26):
+        category_page_html = request_html(url=f'{url}{page_num}')
+        adt_urls = extract_adt_urls(category_page_html)
+        for adt_url in adt_urls:
+            adv_html = request_html(adt_url)
+            if adv_html is None:
+                continue
+            parser_adv = parser_adt(adv_html)
+            if parser_adv is None:
+                continue
+            parser_adv['url'] = adt_url
+            yield parser_adv
 
 
-def request_html(url):
+def request_html(url) -> str | None:
     try:
         response = requests.get(url, timeout=5)
         response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'lxml')
-        data = soup.find_all('div', class_='css-1sw7q4x')
-        return data
     except(requests.RequestException, ValueError, AttributeError):
         print('error request_html')
+        return None
+    return response.text
 
 
-def extract_adt_urls(category_page_html):
+def extract_adt_urls(category_page_html: str | None) -> list[str]:
     adt_urls = []
-    for link in category_page_html:
+    if category_page_html is None:
+        return adt_urls
+    soup = BeautifulSoup(category_page_html, 'html')
+    url_divs = soup.find_all('div', class_='css-1sw7q4x').text
+    for div in url_divs:
         try:
-            card_url = link.find('a').get('href')
-            response_product = requests.get('https://www.olx.kz' + card_url, timeout=5)
-            response_product.raise_for_status()
-            soup_product = BeautifulSoup(response_product.text, 'lxml')
-            adt_urls.append(soup_product)
-        except(requests.RequestException, ValueError, AttributeError):
+            card_url = div.find('a').get('href')
+            if card_url:
+                if 'https://' in card_url:
+                    adt_urls.append(card_url)
+                else:
+                    adt_urls.append(f'https://www.olx.kz{card_url}')
+        except Exception:
             print('error extract_adt_urls')
             continue
     print(adt_urls)
+    return (adt_urls)
 
-def parser_adt(adt_url):
+
+def parser_adt(adv_html: str) -> Adv | None:
+    adv_html = BeautifulSoup(adv_html, 'html')
     try:
-        soup_product_number_id = adt_url.find('span', class_='css-12hdxwj er34gjf0').text                 
-        soup_product_name_salesman = adt_url.find('h4', class_='css-1lcz6o7 er34gjf0').text
-        soup_product_date_registered = adt_url.find('div', class_='css-16h6te1 er34gjf0').text
-        date_registered = parse_register_date(soup_product_date_registered)                
-        soup_product_date_of_last_visit = adt_url.find('span', class_='css-1t0qnkx').text
-        date_of_last_visit = parse_last_online_date(soup_product_date_of_last_visit)                
-        soup_product_date_posted = adt_url.find('span', class_='css-19yf5ek').text
-        print(f'Проверка времени размещения: {soup_product_date_posted}')
-        date_posted = parse_published_date(soup_product_date_posted)                
-        soup_product_jpg = adt_url.find('img').get('src')                  
-        soup_product_title = adt_url.find('h4', class_='css-1juynto').text
-        soup_product_text = adt_url.find('div', class_='css-1t507yq er34gjf0').text
-        print(f'!!!!!!!!!!!!!!!!Объявление!!!!!!!!!!!!!!!!')
-        print(f'ID объявления: {soup_product_number_id}')
-        print(f'Ник продавца: {soup_product_name_salesman}')
-        print(f'Дата регистрации аккаунта: {date_registered}')
-        print(f'Время последнего посещения сайта: {date_of_last_visit}')
-        print(f'Дата размещения объявления: {date_posted}')
-        print(f'Ссылка на фотографию объявления: {soup_product_jpg}')
-        print(f'Название объявления: {soup_product_title}')
-        print(f'Описание объявления: {soup_product_text}')  
-        print('-----------------------')
-  
+        soup_product_number_id = adv_html.find('span', class_='css-12hdxwj er34gjf0').text # ID объявления
+        soup_product_name_salesman = adv_html.find('h4', class_='css-1lcz6o7 er34gjf0').text # Ник продавца
+        soup_product_date_registered = adv_html.find('div', class_='css-16h6te1 er34gjf0').text 
+        date_registered = parse_register_date(soup_product_date_registered) # Дата регистрации аккаунта
+        soup_product_date_of_last_visit = adv_html.find('span', class_='css-1t0qnkx').text
+        date_of_last_visit = parse_last_online_date(soup_product_date_of_last_visit) # Время последнего посещения сайта
+        soup_product_date_posted = adv_html.find('span', class_='css-19yf5ek').text
+        date_posted = parse_published_date(soup_product_date_posted) # Дата размещения объявления
+        soup_product_jpg = adv_html.find('img').get('src') # Ссылка на фотографию объявления
+        soup_product_title = adv_html.find('h4', class_='css-1juynto').text # Название объявления
+        soup_product_text = adv_html.find('div', class_='css-1t507yq er34gjf0').text # Описание объявления   
     except(requests.RequestException, ValueError, AttributeError):
-        print(f'___________________________________________________error adt___________________________________________________')
-        
-        
-        
-
-
+        print(f'{"_"*51}error adt{"_"*51}')
+        return None
+    adv = Adv(
+            id=soup_product_number_id,
+            ads_name=soup_product_title,
+            ads_content=soup_product_text,
+            seller_name=soup_product_name_salesman,
+            date_registered=date_registered,
+            date_of_last_visit=date_of_last_visit,
+            date_posted=date_posted,
+            picture=soup_product_jpg
+        )
+    print(adv)
+    return adv
 
 def parse_register_date(date_time: str) -> datetime:
     #  Дата регистрации пользователя
     date_time = date_time.split(' ')
     result = f'{translate_month_to_en(date_time[2])}, {date_time[3]}'
     return datetime.strptime(result, '%B, %Y')
-    
+
+
 def parse_last_online_date(date_time: str) -> datetime:
     # Дата последнего посещения сайта пользователем
     date_time = date_time.split(' ')
@@ -131,6 +157,7 @@ def parse_last_online_date(date_time: str) -> datetime:
         date_of_last_visit = f'{day}, {month}, {year} {time}'
         return datetime.strptime(date_of_last_visit, '%d, %m, %Y %H:%M')
 
+
 def parse_published_date(date_time) -> datetime:
     # Дата публикации объявления
 
@@ -152,8 +179,8 @@ def parse_published_date(date_time) -> datetime:
         time = date_time[2]
         published_date = f'{day}, {month}, {year} {time}'
         return datetime.strptime(published_date, '%d, %m, %Y %H:%M')
-    
+
 
 if __name__ in '__main__':
-    url = 'https://www.olx.kz/zhivotnye/?page=' 
+    url = 'https://www.olx.kz/zhivotnye/?page='
     parser_page(url)
