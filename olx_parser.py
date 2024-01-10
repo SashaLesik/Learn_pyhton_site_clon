@@ -68,8 +68,8 @@ def request_html(url) -> str | None:
     try:
         response = requests.get(url, timeout=5)
         response.raise_for_status()
-    except(requests.RequestException, ValueError, AttributeError):
-        print('error request_html')
+    except(requests.RequestException, ValueError, AttributeError) as err:
+        logging.error('error request_html', exc_info=err)
         return None
     return response.text
 
@@ -88,8 +88,8 @@ def extract_adt_urls(category_page_html: str | None) -> list[str]:
                     adt_urls.append(card_url)
                 else:
                     adt_urls.append(f'https://www.olx.kz{card_url}')
-        except Exception:
-            print('error extract_adt_urls')
+        except Exception as err:
+            logging.error('error extract_adt_urls', exc_info=err)
             continue
     print(adt_urls)
     return (adt_urls)
