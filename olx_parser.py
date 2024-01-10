@@ -1,4 +1,5 @@
 from typing import TypedDict, NotRequired
+import logging
 
 import requests
 from bs4 import BeautifulSoup
@@ -77,8 +78,8 @@ def extract_adt_urls(category_page_html: str | None) -> list[str]:
     adt_urls = []
     if category_page_html is None:
         return adt_urls
-    soup = BeautifulSoup(category_page_html, 'html')
-    url_divs = soup.find_all('div', class_='css-1sw7q4x').text
+    soup = BeautifulSoup(category_page_html, 'lxml')
+    url_divs = soup.find_all('div', class_='css-1sw7q4x')
     for div in url_divs:
         try:
             card_url = div.find('a').get('href')
@@ -95,7 +96,7 @@ def extract_adt_urls(category_page_html: str | None) -> list[str]:
 
 
 def parser_adt(adv_html: str) -> Adv | None:
-    adv_html = BeautifulSoup(adv_html, 'html')
+    adv_html = BeautifulSoup(adv_html, 'lxml')
     try:
         soup_product_number_id = adv_html.find('span', class_='css-12hdxwj er34gjf0').text # ID объявления
         soup_product_name_salesman = adv_html.find('h4', class_='css-1lcz6o7 er34gjf0').text # Ник продавца
@@ -108,8 +109,8 @@ def parser_adt(adv_html: str) -> Adv | None:
         soup_product_jpg = adv_html.find('img').get('src') # Ссылка на фотографию объявления
         soup_product_title = adv_html.find('h4', class_='css-1juynto').text # Название объявления
         soup_product_text = adv_html.find('div', class_='css-1t507yq er34gjf0').text # Описание объявления   
-    except(requests.RequestException, ValueError, AttributeError):
-        print(f'{"_"*51}error adt{"_"*51}')
+    except(requests.RequestException, ValueError, AttributeError) as err:
+        logging.error(f'{"_"*51}error adt{"_"*51}',  exc_info=err)
         return None
     adv = Adv(
             id=soup_product_number_id,
@@ -121,7 +122,6 @@ def parser_adt(adv_html: str) -> Adv | None:
             date_posted=date_posted,
             picture=soup_product_jpg
         )
-    print(adv)
     return adv
 
 def parse_register_date(date_time: str) -> datetime:
@@ -134,10 +134,6 @@ def parse_register_date(date_time: str) -> datetime:
 def parse_last_online_date(date_time: str) -> datetime:
     # Дата последнего посещения сайта пользователем
     date_time = date_time.split(' ')
-    day = None
-    month = None
-    year = None
-    date_of_last_visit = None
     if len(date_time) > 4:
         day, month, year = date_time[1], translate_month_to_en(date_time[2]), date_time[3]
         date_of_last_visit = f'{day}, {month}, {year}'
@@ -160,13 +156,8 @@ def parse_last_online_date(date_time: str) -> datetime:
 
 def parse_published_date(date_time) -> datetime:
     # Дата публикации объявления
-
     date_time = date_time.split(' ')
-    day = None
-    month = None
-    year = None
-    published_date = None
-    if int(date_time[0]):
+    if date_time[0].isdigit():
         day = date_time[0]
         month = translate_month_to_en(date_time[1])
         year = date_time[2]
@@ -181,6 +172,8 @@ def parse_published_date(date_time) -> datetime:
         return datetime.strptime(published_date, '%d, %m, %Y %H:%M')
 
 
-if __name__ in '__main__':
+if __name__ == '__main__':
     url = 'https://www.olx.kz/zhivotnye/?page='
-    parser_page(url)
+    for adt_dict in parser_page(url):
+        print(adt_dict)
+        
