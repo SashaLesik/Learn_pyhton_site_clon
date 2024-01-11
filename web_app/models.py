@@ -1,10 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
-from web_app.config import Base
 
 db = SQLAlchemy()
 
 
-class OlxSite(Base):
+class OlxSite(db.Model):
     __tablename__ = 'olx_site'
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.String, unique=True)

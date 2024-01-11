@@ -4,15 +4,10 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 #from web_app import функция ктр напишет Kоля?
 
 
-from alembic.config import Config
-from alembic import command
-
-
 app = create_app()
 app.app_context().push()
 db.create_all()
-alembic_cfg = Config("/root/learn_python/AVITO_CLON/Learn_pyhton_site_clon/alembic.ini")
-command.stamp(alembic_cfg, "head")
+
 
 
 def parse_to_base(): #добавить что именно импортиуертся 
