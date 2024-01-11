@@ -5,6 +5,8 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
+logger = logging.getLogger()
+
 month_mapping = {'январь': 'January',
                  'февраль': 'February',
                  'март': 'March',
@@ -69,7 +71,7 @@ def request_html(url) -> str | None:
         response = requests.get(url, timeout=5)
         response.raise_for_status()
     except(requests.RequestException, ValueError, AttributeError) as err:
-        logging.error('error request_html', exc_info=err)
+        logger.error('error request_html', exc_info=err)
         return None
     return response.text
 
@@ -89,7 +91,7 @@ def extract_adt_urls(category_page_html: str | None) -> list[str]:
                 else:
                     adt_urls.append(f'https://www.olx.kz{card_url}')
         except Exception as err:
-            logging.error('error extract_adt_urls', exc_info=err)
+            logger.error('error extract_adt_urls', exc_info=err)
             continue
     print(adt_urls)
     return (adt_urls)
@@ -110,7 +112,7 @@ def parser_adt(adv_html: str) -> Adv | None:
         soup_product_title = adv_html.find('h4', class_='css-1juynto').text # Название объявления
         soup_product_text = adv_html.find('div', class_='css-1t507yq er34gjf0').text # Описание объявления   
     except(requests.RequestException, ValueError, AttributeError) as err:
-        logging.error(f'{"_"*51}error adt{"_"*51}',  exc_info=err)
+        logger.error(f'{"_"*51}error adt{"_"*51}',  exc_info=err)
         return None
     adv = Adv(
             id=soup_product_number_id,
