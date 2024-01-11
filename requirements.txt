@@ -24,3 +24,4 @@ SQLAlchemy==2.0.23
 typing_extensions==4.9.0
 urllib3==1.25.11
 Werkzeug==3.0.1
+alembic
