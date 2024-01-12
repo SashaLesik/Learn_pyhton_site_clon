@@ -1,6 +1,5 @@
 from web_app import db, create_app
 from web_app.models import OlxSite
-from sqlalchemy.orm import scoped_session, sessionmaker
 #from web_app import функция ктр напишет Kоля?
 
 
@@ -22,12 +21,14 @@ def parse_to_base(): #добавить что именно импортиуер�
                        ads_content =" 1234", phone_number ="9104398846", seller_name = "Vasio", date_registered = "11.12.2023", date_of_last_visit = "09.01.2024", 
                         date_posted = "08.01.2024", number_of_looks = 148, location = "Алматы",
                        picture = "href.example")
-    # ad_exists = parse_ad.query.filter(parse_ad.url == url).count()
+    # ad_exists = parse_ad.query.filter(parse_ad.url).count()
     # if not ad_exists:
     db.session.add(parse_ad)
     db.session.commit()
 
+
 parse_to_base()
+
 
 def extract_from_db():
     """функция, которая получает N <объектов> из бд"""
