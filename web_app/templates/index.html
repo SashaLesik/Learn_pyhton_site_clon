@@ -14,7 +14,19 @@
     <div class= 'row'>
         <div class= "col-8">
             <h2> Объявления </h2>
-           
+            {% for ad in ads_list %}
+            <h3> <a href = "{{ ad.url }}">{{ ad.ads_name }} </a>  </h3>
+            <p>{{ ad.ads_content}}</p>
+            <p>{{ ad.phone_number}}</p>
+            <p>{{ ad.seller_name}}</p>
+            <p>{{ ad.date_registered.strftime('%Y-%m-%d')}}</p>
+            <p>{{ ad.date_posted.strftime('%Y-%m-%d') }}</p>
+            <p>{{ ad.date_of_last_visit.strftime('%Y-%m-%d') }}</p>
+            <p>{{ ad.number_of_looks }}</p>
+            <p>{{ ad.location}}</p>
+            <p>{{ ad.category}}</p>
+            <p>{{ ad.picture}}</p> #вывод картинки????
+            {% endfor %}
         </div>
         
 </div>

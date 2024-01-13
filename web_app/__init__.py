@@ -1,7 +1,8 @@
 from flask import Flask
-from web_app.models import db
+from web_app.models import db, OlxSite
 from flask import render_template
 from flask_migrate import Migrate
+from web_app.database_functions import extract_from_db
 
 
 def create_app():
@@ -12,5 +13,7 @@ def create_app():
 
     @app.route('/')
     def index():
-        return render_template('index.html')
+        ads_list = OlxSite.query.order_by(OlxSite.date_posted.desc()).all()
+        extract_from_db() #не уверена, что так делается
+        return render_template('index.html', ads_list=ads_list)
     return app
