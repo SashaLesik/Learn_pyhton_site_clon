@@ -7,30 +7,30 @@ from datetime import datetime, timedelta
 
 logger = logging.getLogger()
 
-month_mapping = {'январь': 'January',
-                 'февраль': 'February',
-                 'март': 'March',
-                 'апрель': 'April',
-                 'май': 'May',
-                 'июнь': 'June',
-                 'июль': 'July',
-                 'август': 'August',
-                 'сентябрь': 'September',
-                 'октябрь': 'October',
-                 'ноябрь': 'November',
-                 'декабрь': 'December',
-                 'января': 'January',
-                 'февраля': 'February',
-                 'марта': 'March',
-                 'апреля': 'April',
-                 'мая': 'May',
-                 'июня': 'June',
-                 'июля': 'July',
-                 'августа': 'August',
-                 'сентября': 'September',
-                 'октября': 'October',
-                 'ноября': 'November',
-                 'декабря': 'December'}
+month_mapping = {'январь': 1,
+                 'февраль': 2,
+                 'март': 3,
+                 'апрель': 4,
+                 'май': 5,
+                 'июнь': 6,
+                 'июль': 7,
+                 'август': 8,
+                 'сентябрь': 9,
+                 'октябрь': 10,
+                 'ноябрь': 11,
+                 'декабрь': 12,
+                 'января': 1,
+                 'февраля': 2,
+                 'марта': 3,
+                 'апреля': 4,
+                 'мая': 5,
+                 'июня': 6,
+                 'июля': 7,
+                 'августа': 8,
+                 'сентября': 9,
+                 'октября': 10,
+                 'ноября': 11,
+                 'декабря': 12}
 
 class Adv(TypedDict):
     url: str
@@ -46,14 +46,17 @@ class Adv(TypedDict):
     location: NotRequired[str]
     picture: str
 
-def translate_month_to_en(ru_month_name: str) -> str:
+def translate_month_to_en(ru_month_name: str) -> int:
     # Функция перевода месяца с RU на EN
     return month_mapping[ru_month_name]
 
 
-def parser_page(url):
+def parser_category(url):
     for page_num in range(1, 26):
         category_page_html = request_html(url=f'{url}{page_num}')
+        if category_page_html is None:
+            logger.error(f'error on request category page {page_num}')
+            continue
         adt_urls = extract_adt_urls(category_page_html)
         for adt_url in adt_urls:
             adv_html = request_html(adt_url)
@@ -78,8 +81,6 @@ def request_html(url) -> str | None:
 
 def extract_adt_urls(category_page_html: str | None) -> list[str]:
     adt_urls = []
-    if category_page_html is None:
-        return adt_urls
     soup = BeautifulSoup(category_page_html, 'lxml')
     url_divs = soup.find_all('div', class_='css-1sw7q4x')
     for div in url_divs:
@@ -126,11 +127,12 @@ def parser_adt(adv_html: str) -> Adv | None:
         )
     return adv
 
-def parse_register_date(date_time: str) -> datetime:
+def parse_register_date(date_time: str | int) -> datetime:
     #  Дата регистрации пользователя
-    date_time = date_time.split(' ')
-    result = f'{translate_month_to_en(date_time[2])}, {date_time[3]}'
-    return datetime.strptime(result, '%B, %Y')
+    dt_element = date_time.split(' ')
+    month = translate_month_to_en(dt_element[2])
+    year = int(dt_element[3])
+    return datetime(year, month, day=1)
 
 
 def parse_last_online_date(date_time: str) -> datetime:
@@ -139,7 +141,7 @@ def parse_last_online_date(date_time: str) -> datetime:
     if len(date_time) > 4:
         day, month, year = date_time[1], translate_month_to_en(date_time[2]), date_time[3]
         date_of_last_visit = f'{day}, {month}, {year}'
-        return datetime.strptime(date_of_last_visit, '%d, %B, %Y')
+        return datetime.strptime(date_of_last_visit, '%d, %m, %Y')
     elif len(date_time) == 3:
         day = str(datetime.now().day)
         month = str(datetime.now().month)
@@ -160,22 +162,19 @@ def parse_published_date(date_time) -> datetime:
     # Дата публикации объявления
     date_time = date_time.split(' ')
     if date_time[0].isdigit():
-        day = date_time[0]
+        day = int(date_time[0])
         month = translate_month_to_en(date_time[1])
-        year = date_time[2]
-        published_date = f'{day} {month} {year}'
-        return datetime.strptime(published_date, '%d %B %Y')
+        year = int(date_time[2])
+        published_date = datetime(year, month, day)
+        return published_date
     elif date_time[0] == 'Сегодня':
-        day = str(datetime.now().day)
-        month = str(datetime.now().month)
-        year = str(datetime.now().year)
-        time = date_time[2]
-        published_date = f'{day}, {month}, {year} {time}'
-        return datetime.strptime(published_date, '%d, %m, %Y %H:%M')
+        hour, minute = date_time[2].split(':')
+        published_date = datetime.now().replace(hour=int(hour), minute=int(minute))
+        return published_date
 
 
 if __name__ == '__main__':
     url = 'https://www.olx.kz/zhivotnye/?page='
-    for adt_dict in parser_page(url):
+    for adt_dict in parser_category(url):
         print(adt_dict)
         
