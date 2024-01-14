@@ -139,23 +139,21 @@ def parse_last_online_date(date_time: str) -> datetime:
     # Дата последнего посещения сайта пользователем
     date_time = date_time.split(' ')
     if len(date_time) > 4:
-        day, month, year = date_time[1], translate_month_to_en(date_time[2]), date_time[3]
-        date_of_last_visit = f'{day}, {month}, {year}'
-        return datetime.strptime(date_of_last_visit, '%d, %m, %Y')
+        day = int(date_time[1])
+        month = translate_month_to_en(date_time[2])
+        year = int(date_time[3])
+        return datetime(year, month, day)
     elif len(date_time) == 3:
-        day = str(datetime.now().day)
-        month = str(datetime.now().month)
-        year = str(datetime.now().year)
-        time = date_time[2]
-        date_of_last_visit = f'{day}, {month}, {year} {time}'
-        return datetime.strptime(date_of_last_visit, '%d, %m, %Y %H:%M')
+        hour, minute = date_time[2].split(':')
+        date_of_last_visit = datetime.now().replace(hour=int(hour), minute=int(minute))
+        return date_of_last_visit
     elif len(date_time) == 4:
-        day = str((datetime.now() - timedelta(days=1)).day)
-        month = str(datetime.now().month)
-        year = str(datetime.now().year)
-        time = date_time[3]
-        date_of_last_visit = f'{day}, {month}, {year} {time}'
-        return datetime.strptime(date_of_last_visit, '%d, %m, %Y %H:%M')
+        hour, minute = date_time[3].split(':')
+        day_earline = datetime.now() - timedelta(days=1)
+        date_of_last_visit = day_earline.replace(hour=int(hour), minute=int(minute))
+        return date_of_last_visit
+    else:
+        raise Exception
 
 
 def parse_published_date(date_time) -> datetime:
