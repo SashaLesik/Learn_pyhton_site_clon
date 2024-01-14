@@ -1,124 +1,178 @@
+from typing import TypedDict, NotRequired
+import logging
+
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
+logger = logging.getLogger()
 
-date = {'январь': 'January',
-        'февраль': 'February',
-        'март': 'March',
-        'апрель': 'April',
-        'май': 'May',
-        'июнь': 'June',
-        'июль': 'July',
-        'август': 'August',
-        'сентябрь': 'September',
-        'октябрь': 'October',
-        'ноябрь': 'November',
-        'декабрь': 'December',
-        'января': 'January',
-        'февраля': 'February',
-        'марта': 'March',
-        'апреля': 'April',
-        'мая': 'May',
-        'июня': 'June',
-        'июля': 'July',
-        'августа': 'August',
-        'сентября': 'September',
-        'октября': 'October',
-        'ноября': 'November',
-        'декабря': 'December'}
+month_mapping = {'январь': 1,
+                 'февраль': 2,
+                 'март': 3,
+                 'апрель': 4,
+                 'май': 5,
+                 'июнь': 6,
+                 'июль': 7,
+                 'август': 8,
+                 'сентябрь': 9,
+                 'октябрь': 10,
+                 'ноябрь': 11,
+                 'декабрь': 12,
+                 'января': 1,
+                 'февраля': 2,
+                 'марта': 3,
+                 'апреля': 4,
+                 'мая': 5,
+                 'июня': 6,
+                 'июля': 7,
+                 'августа': 8,
+                 'сентября': 9,
+                 'октября': 10,
+                 'ноября': 11,
+                 'декабря': 12}
+
+class Adv(TypedDict):
+    url: str
+    id: str 
+    ads_name: str
+    ads_content: str
+    phone_number: NotRequired[str]
+    seller_name: str
+    date_registered: datetime
+    date_of_last_visit: datetime
+    date_posted: datetime
+    number_of_looks: NotRequired[int]
+    location: NotRequired[str]
+    picture: str
+
+def translate_month_to_en(ru_month_name: str) -> int:
+    # Функция перевода месяца с RU на EN
+    return month_mapping[ru_month_name]
 
 
-def get_product(url, count = 100):
-    title_begin = None
-    title_str = None
-    for page in range(1,count):
-        title_begin = title_str
-        try:
-            response = requests.get(f'{url}{page}', timeout=5)
-            response.raise_for_status()
-            soup = BeautifulSoup(response.text, 'lxml')
-            title_str = soup.find('title').text
-            if title_begin == title_str:
-                break
-            data = soup.find_all('div', class_='css-1sw7q4x')
-            for link in data:
-                card_url = link.find('a').get('href')
-                response_product = requests.get('https://www.olx.kz' + card_url, timeout=5)
-                response_product.raise_for_status()                
-                soup_product = BeautifulSoup(response_product.text, 'lxml')
-                soup_product_number_id = soup_product.find('span', class_='css-12hdxwj er34gjf0').text                 
-                soup_product_name_salesman = soup_product.find('h4', class_='css-1lcz6o7 er34gjf0').text
-
-                soup_product_date_registered = soup_product.find('div', class_='css-16h6te1 er34gjf0').text.split(' ')
-                date_registered = format_date(soup_product_date_registered)
-                
-
-                soup_product_date_of_last_visit = soup_product.find('span', class_='css-1t0qnkx').text.split(' ')
-                date_of_last_visit = format_date(soup_product_date_of_last_visit)
-                
-                soup_product_date_posted = soup_product.find('span', class_='css-19yf5ek').text.split(' ')
-                date_posted = format_date(soup_product_date_posted)
-                
-                soup_product_jpg = soup_product.find('img').get('src')                  
-                soup_product_title = soup_product.find('h4', class_='css-1juynto').text
-                soup_product_text = soup_product.find('div', class_='css-1t507yq er34gjf0').text
-        
-        except(requests.RequestException, ValueError, AttributeError):
-            print('error')
+def parser_category(url):
+    for page_num in range(1, 26):
+        category_page_html = request_html(url=f'{url}{page_num}')
+        if category_page_html is None:
+            logger.error(f'error on request category page {page_num}')
             continue
+        adt_urls = extract_adt_urls(category_page_html)
+        for adt_url in adt_urls:
+            adv_html = request_html(adt_url)
+            if adv_html is None:
+                continue
+            parser_adv = parser_adt(adv_html)
+            if parser_adv is None:
+                continue
+            parser_adv['url'] = adt_url
+            yield parser_adv
 
 
+def request_html(url) -> str | None:
+    try:
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+    except(requests.RequestException, ValueError, AttributeError) as err:
+        logger.error('error request_html', exc_info=err)
+        return None
+    return response.text
 
-def format_date(date_time):
-    '''['Member', 'Since', 'июнь', '2020', 'г.']'''
-    day = None
-    month = None
-    year = None
-    date_of_last_visit = None
-    if date_time[0] == 'Member':
-        result = f'{date[date_time[2]]}, {date_time[3]}'
-        return datetime.strptime(result, '%B, %Y')
 
-    elif date_time[0] == 'Онлайн':
-        '''['Онлайн', '25', 'декабря', '2023', 'г.'] +
-           ['Онлайн', 'в', '18:33'] +
-           ['Онлайн', 'вчера', 'в', '07:04'] +
-        '''
-        if len(date_time) > 4:
-            day, month, year = date_time[1], date[date_time[2]], date_time[3]
-            date_of_last_visit = f'{day}, {month}, {year}'
-            return datetime.strptime(date_of_last_visit, '%d, %B, %Y')
-        elif len(date_time) == 3:
-            day = str(datetime.now().day)
-            month = str(datetime.now().month)
-            year = str(datetime.now().year)
-            time = date_time[2]
-            date_of_last_visit = f'{day}, {month}, {year} {time}'
-            return datetime.strptime(date_of_last_visit, '%d, %m, %Y %H:%M')
-        elif len(date_time) == 4:
-            day = str((datetime.now() - timedelta(days=1)).day)
-            month = str(datetime.now().month)
-            year = str(datetime.now().year)
-            time = date_time[3]
-            date_of_last_visit = f'{day}, {month}, {year} {time}'
-            return datetime.strptime(date_of_last_visit, '%d, %m, %Y %H:%M')
+def extract_adt_urls(category_page_html: str | None) -> list[str]:
+    adt_urls = []
+    soup = BeautifulSoup(category_page_html, 'lxml')
+    url_divs = soup.find_all('div', class_='css-1sw7q4x')
+    for div in url_divs:
+        try:
+            card_url = div.find('a').get('href')
+            if card_url:
+                if 'https://' in card_url:
+                    adt_urls.append(card_url)
+                else:
+                    adt_urls.append(f'https://www.olx.kz{card_url}')
+        except Exception as err:
+            logger.error('error extract_adt_urls', exc_info=err)
+            continue
+    print(adt_urls)
+    return (adt_urls)
 
-    elif date_time[0] == type(int):
-        day = date_time[0]
-        month = date[date_time[1]]
-        year = date_time[2]
-        date_of_last_visit = f'{day} {month} {year}'
-        return datetime.strptime(date_of_last_visit, '%d %B %Y')
+
+def parser_adt(adv_html: str) -> Adv | None:
+    adv_html = BeautifulSoup(adv_html, 'lxml')
+    try:
+        soup_product_number_id = adv_html.find('span', class_='css-12hdxwj er34gjf0').text # ID объявления
+        soup_product_name_salesman = adv_html.find('h4', class_='css-1lcz6o7 er34gjf0').text # Ник продавца
+        soup_product_date_registered = adv_html.find('div', class_='css-16h6te1 er34gjf0').text 
+        date_registered = parse_register_date(soup_product_date_registered) # Дата регистрации аккаунта
+        soup_product_date_of_last_visit = adv_html.find('span', class_='css-1t0qnkx').text
+        date_of_last_visit = parse_last_online_date(soup_product_date_of_last_visit) # Время последнего посещения сайта
+        soup_product_date_posted = adv_html.find('span', class_='css-19yf5ek').text
+        date_posted = parse_published_date(soup_product_date_posted) # Дата размещения объявления
+        soup_product_jpg = adv_html.find('img').get('src') # Ссылка на фотографию объявления
+        soup_product_title = adv_html.find('h4', class_='css-1juynto').text # Название объявления
+        soup_product_text = adv_html.find('div', class_='css-1t507yq er34gjf0').text # Описание объявления   
+    except(requests.RequestException, ValueError, AttributeError) as err:
+        logger.error(f'{"_"*51}error adt{"_"*51}',  exc_info=err)
+        return None
+    adv = Adv(
+            id=soup_product_number_id,
+            ads_name=soup_product_title,
+            ads_content=soup_product_text,
+            seller_name=soup_product_name_salesman,
+            date_registered=date_registered,
+            date_of_last_visit=date_of_last_visit,
+            date_posted=date_posted,
+            picture=soup_product_jpg
+        )
+    return adv
+
+def parse_register_date(date_time: str | int) -> datetime:
+    #  Дата регистрации пользователя
+    dt_element = date_time.split(' ')
+    month = translate_month_to_en(dt_element[2])
+    year = int(dt_element[3])
+    return datetime(year, month, day=1)
+
+
+def parse_last_online_date(date_time: str) -> datetime:
+    # Дата последнего посещения сайта пользователем
+    date_time = date_time.split(' ')
+    if len(date_time) > 4:
+        day = int(date_time[1])
+        month = translate_month_to_en(date_time[2])
+        year = int(date_time[3])
+        return datetime(year, month, day)
+    elif len(date_time) == 3:
+        hour, minute = date_time[2].split(':')
+        date_of_last_visit = datetime.now().replace(hour=int(hour), minute=int(minute))
+        return date_of_last_visit
+    elif len(date_time) == 4:
+        hour, minute = date_time[3].split(':')
+        day_earline = datetime.now() - timedelta(days=1)
+        date_of_last_visit = day_earline.replace(hour=int(hour), minute=int(minute))
+        return date_of_last_visit
+    else:
+        raise Exception
+
+
+def parse_published_date(date_time) -> datetime:
+    # Дата публикации объявления
+    date_time = date_time.split(' ')
+    if date_time[0].isdigit():
+        day = int(date_time[0])
+        month = translate_month_to_en(date_time[1])
+        year = int(date_time[2])
+        published_date = datetime(year, month, day)
+        return published_date
     elif date_time[0] == 'Сегодня':
-        day = str(datetime.now().day)
-        month = str(datetime.now().month)
-        year = str(datetime.now().year)
-        time = date_time[2]
-        date_of_last_visit = f'{day}, {month}, {year} {time}'
-        return datetime.strptime(date_of_last_visit, '%d, %m, %Y %H:%M')
-    
+        hour, minute = date_time[2].split(':')
+        published_date = datetime.now().replace(hour=int(hour), minute=int(minute))
+        return published_date
 
-if __name__ in '__main__':
+
+if __name__ == '__main__':
     url = 'https://www.olx.kz/zhivotnye/?page='
-    get_product(url)
+    for adt_dict in parser_category(url):
+        print(adt_dict)
+        
