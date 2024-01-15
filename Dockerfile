@@ -1,6 +1,9 @@
 FROM python:3.11.7-slim
 
-WORKDIR /app/
+ENV FLASK_APP=web_app 
+ENV FLASK_ENV=development
+
+WORKDIR /web_app/
 
 RUN python -m pip install --upgrade pip
 
@@ -8,6 +11,6 @@ COPY requirements.txt .
 
 RUN python -m pip install -r requirements.txt
 
-COPY runserver.py /app/
+COPY . /web_app/
 
-CMD flask --app runserver run --host 0.0.0.0
+CMD flask run --host 0.0.0.0 --port 8000

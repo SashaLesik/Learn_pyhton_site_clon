@@ -13,7 +13,12 @@ def create_app():
 
     @app.route('/')
     def index():
-        ads_list = OlxSite.query.order_by(OlxSite.date_posted.desc()).all()
-        extract_from_db() #не уверена, что так делается
+        ads_list = extract_from_db() # order_by(OlxSite.date_posted.desc())
         return render_template('index.html', ads_list=ads_list)
     return app
+
+if __name__ == "__main__":
+    app = create_app()
+    app.app_context().push()
+    db.create_all()
+            
