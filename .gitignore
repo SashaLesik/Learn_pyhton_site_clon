@@ -1,5 +1,6 @@
 *.db
 *.yaml
+*.env
 docker-compose.yaml:Zone.Identifier
 # Byte-compiled / optimized / DLL files
 __pycache__/
