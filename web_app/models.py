@@ -7,7 +7,7 @@ class OlxSite(db.Model):
     __tablename__ = 'olx_site'
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.String, unique=True, nullable=False)
-    origin_id = db.Column(db.String, Unique=True, nullable=False)
+    origin_id = db.Column(db.String, unique=True, nullable=False)
     category = db.Column(db.String)
     ads_name = db.Column(db.String)
     ads_content = db.Column(db.Text)
