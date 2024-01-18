@@ -18,7 +18,7 @@ def insert_advertise(adv: Adv):
 
 def extract_from_db():
     """функция, которая получает N <объектов> из бд"""
-    ads_list = OlxSite.query.paginate(page=0, per_page=20)
+    ads_list = OlxSite.query.paginate(page=1, per_page=20)
     return ads_list
 
 

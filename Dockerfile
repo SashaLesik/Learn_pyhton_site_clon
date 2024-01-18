@@ -11,6 +11,7 @@ COPY requirements.txt .
 
 RUN python -m pip install -r requirements.txt
 
-COPY . /web_app/
 
-CMD flask run --host 0.0.0.0 --port 8000
+COPY . .
+
+# CMD flask run --host 0.0.0.0 --port 8000

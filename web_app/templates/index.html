@@ -25,7 +25,7 @@
             <p>{{ ad.number_of_looks }}</p>
             <p>{{ ad.location}}</p>
             <p>{{ ad.category}}</p>
-            <p> <img {{ src = ad.picture}} alt ='no picture today, sorry', width="1024" height="683"></p> # вывод картинки????
+            <img src ="{{ ad.picture }}" alt ="no picture today, sorry" width="1024" height="683">
             {% endfor %}
         </div>
         

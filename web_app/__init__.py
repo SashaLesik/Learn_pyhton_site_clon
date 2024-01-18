@@ -9,6 +9,8 @@ def create_app():
     app = Flask(__name__)
     app.config.from_pyfile('config.py')
     db.init_app(app)
+    with app.app_context():
+        db.create_all()
     migrate = Migrate(app, db, command='migrate')
 
     @app.route('/')
@@ -16,9 +18,8 @@ def create_app():
         ads_list = extract_from_db() # order_by(OlxSite.date_posted.desc())
         return render_template('index.html', ads_list=ads_list)
     return app
+      
 
-if __name__ == "__main__":
-    app = create_app()
-    app.app_context().push()
-    db.create_all()
+
+    
             

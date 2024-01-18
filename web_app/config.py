@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 
 
-load_dotenv()
+load_dotenv("dc.env")
 DB_USER = os.environ['DB_USER']
 DB_PASSWORD = os.getenv('DB_PASSWORD', 'default_password')
 DB_NAME = os.getenv('DB_NAME', 'postgres')
