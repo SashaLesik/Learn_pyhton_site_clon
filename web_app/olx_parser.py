@@ -142,8 +142,8 @@ def parse_last_online_date(date_time: str) -> datetime:
         return date_of_last_visit
     elif len(date_time) == 4:
         hour, minute = date_time[3].split(':')
-        day_earline = datetime.now() - timedelta(days=1)
-        date_of_last_visit = day_earline.replace(hour=int(hour), minute=int(minute))
+        day_earlier = datetime.now() - timedelta(days=1)
+        date_of_last_visit = day_earlier.replace(hour=int(hour), minute=int(minute))
         return date_of_last_visit
     else:
         raise Exception

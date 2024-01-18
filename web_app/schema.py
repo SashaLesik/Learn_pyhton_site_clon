@@ -11,7 +11,7 @@ class Adv(BaseModel):
     date_registered: datetime = Field(description='Дата регистрации аккаунта')
     date_of_last_visit: datetime = Field(description='Время последнего посещения сайта')
     date_posted: datetime = Field(description='Дата размещения объявления')
-    picture: str = Field(description='Ссылка на фотографию объявления')
+    picture_url: str = Field(description='Ссылка на фотографию объявления')
     number_of_views: int = Field(description='Кол-во просмотров', default=0)
     location: str | None = Field(description='Местоположение объявления')
     phone_number: str | None = Field(description='Номер телефона')
