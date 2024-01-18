@@ -1,11 +1,12 @@
-from typing import TypedDict, NotRequired
-import logging
 
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from datetime import datetime, timedelta
 
-logger = logging.getLogger()
+from schema import Adv
+
+from logger import logger
+from web_app.database_functions import adv_exists
 
 month_mapping = {'январь': 1,
                  'февраль': 2,
@@ -32,19 +33,7 @@ month_mapping = {'январь': 1,
                  'ноября': 11,
                  'декабря': 12}
 
-class Adv(TypedDict):
-    url: str
-    id: str 
-    ads_name: str
-    ads_content: str
-    phone_number: NotRequired[str]
-    seller_name: str
-    date_registered: datetime
-    date_of_last_visit: datetime
-    date_posted: datetime
-    number_of_looks: NotRequired[int]
-    location: NotRequired[str]
-    picture: str
+
 
 def translate_month_to_en(ru_month_name: str) -> int:
     # Функция перевода месяца с RU на EN
@@ -59,13 +48,14 @@ def parser_category(url):
             continue
         adt_urls = extract_adt_urls(category_page_html)
         for adt_url in adt_urls:
+            if adv_exists(adt_url):
+                continue
             adv_html = request_html(adt_url)
             if adv_html is None:
                 continue
-            parser_adv = parser_adt(adv_html)
+            parser_adv = parser_adt(adt_url, adv_html)
             if parser_adv is None:
                 continue
-            parser_adv['url'] = adt_url
             yield parser_adv
 
 
@@ -84,6 +74,8 @@ def extract_adt_urls(category_page_html: str | None) -> list[str]:
     soup = BeautifulSoup(category_page_html, 'lxml')
     url_divs = soup.find_all('div', class_='css-1sw7q4x')
     for div in url_divs:
+        if not isinstance(div, Tag):
+            continue
         try:
             card_url = div.find('a').get('href')
             if card_url:
@@ -98,7 +90,7 @@ def extract_adt_urls(category_page_html: str | None) -> list[str]:
     return (adt_urls)
 
 
-def parser_adt(adv_html: str) -> Adv | None:
+def parser_adt(url: str, adv_html: str) -> Adv | None:
     adv_html = BeautifulSoup(adv_html, 'lxml')
     try:
         soup_product_number_id = adv_html.find('span', class_='css-12hdxwj er34gjf0').text # ID объявления
@@ -116,7 +108,8 @@ def parser_adt(adv_html: str) -> Adv | None:
         logger.error(f'{"_"*51}error adt{"_"*51}',  exc_info=err)
         return None
     adv = Adv(
-            id=soup_product_number_id,
+            url=url,
+            origin_id=soup_product_number_id,
             ads_name=soup_product_title,
             ads_content=soup_product_text,
             seller_name=soup_product_name_salesman,
@@ -149,8 +142,8 @@ def parse_last_online_date(date_time: str) -> datetime:
         return date_of_last_visit
     elif len(date_time) == 4:
         hour, minute = date_time[3].split(':')
-        day_earline = datetime.now() - timedelta(days=1)
-        date_of_last_visit = day_earline.replace(hour=int(hour), minute=int(minute))
+        day_earlier = datetime.now() - timedelta(days=1)
+        date_of_last_visit = day_earlier.replace(hour=int(hour), minute=int(minute))
         return date_of_last_visit
     else:
         raise Exception
