@@ -2,11 +2,12 @@
 import requests
 from bs4 import BeautifulSoup, Tag
 from datetime import datetime, timedelta
-
-from schema import Adv
+from web_app import create_app
+from web_app.models import db
+from web_app.schema import Adv
 
 from logger import logger
-from web_app.database_functions import adv_exists
+from database_functions import adv_exists
 
 month_mapping = {'январь': 1,
                  'февраль': 2,
@@ -165,7 +166,13 @@ def parse_published_date(date_time) -> datetime:
 
 
 if __name__ == '__main__':
-    url = 'https://www.olx.kz/zhivotnye/?page='
-    for adt_dict in parser_category(url):
-        print(adt_dict)
+    app = create_app()
+    db.init_app(app)
+
+    with app.app_context():
+        db.create_all()
+        url = 'https://www.olx.kz/zhivotnye/?page='
+        for adt_dict in parser_category(url):
+            print(adt_dict)
+    app.run
         
