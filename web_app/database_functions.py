@@ -1,5 +1,5 @@
 from web_app.models import OlxSite
-from web_app import db
+from web_app.models import db
 from web_app.schema import Adv
 from web_app.logger import logger
 

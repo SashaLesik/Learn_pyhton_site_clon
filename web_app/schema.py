@@ -2,6 +2,7 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
 
+
 class Adv(BaseModel):
     url: str = Field(description='url объявления')
     origin_id: str = Field(description='id объявления на сайте')
