@@ -1,0 +1,36 @@
+version: '3'
+services:
+
+  web_app:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - database
+    command: flask run --host 0.0.0.0 --port 8000  
+
+  olx_parser:
+      build:
+        dockerfile: Dockerfile
+        context: .
+      env_file:
+      - .env
+      depends_on:
+        - database
+      command: python olx_parser.py
+  database:
+    image: postgres:12.17-alpine3.19
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+
+volumes:
+  db:
