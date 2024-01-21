@@ -21,7 +21,7 @@ services:
       - .env
       depends_on:
         - database
-      command: python olx_parser.py
+      command: python start_parsing.py
   database:
     image: postgres:12.17-alpine3.19
     env_file:

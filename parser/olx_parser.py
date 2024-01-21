@@ -1,14 +1,11 @@
 
 import requests
-from flask import Flask
 from bs4 import BeautifulSoup, Tag
 from datetime import datetime, timedelta
+from parser.database import Database
+from parser.schema import Adv
+from parser.logger import logger
 
-from web_app import create_app
-from web_app.models import db
-from web_app.schema import Adv
-from web_app.logger import logger
-from web_app.database_functions import adv_exists
 
 month_mapping = {'январь': 1,
                  'февраль': 2,
@@ -42,7 +39,7 @@ def translate_month_to_en(ru_month_name: str) -> int:
     return month_mapping[ru_month_name]
 
 
-def parser_category(url):
+def parser_category(url, parser_db: Database):
     for page_num in range(1, 26):
         category_page_html = request_html(url=f'{url}{page_num}')
         if category_page_html is None:
@@ -50,7 +47,7 @@ def parser_category(url):
             continue
         adt_urls = extract_adt_urls(category_page_html)
         for adt_url in adt_urls:
-            if adv_exists(adt_url):
+            if parser_db. adv_exists(adt_url):
                 continue
             adv_html = request_html(adt_url)
             if adv_html is None:
@@ -166,11 +163,4 @@ def parse_published_date(date_time) -> datetime:
         return published_date
 
 
-if __name__ == '__main__':
-    app = create_app()
-    with app.app_context():
-        db.create_all()
-        url = 'https://www.olx.kz/zhivotnye/?page='
-        for adt_dict in parser_category(url):
-            print(adt_dict)
-        
+
