@@ -11,9 +11,6 @@ from parser.schema import Adv
 from parser.logger import logger
 
 
-
-
-
 def parser_category(url, parser_db: Database):
     for page_num in range(1, 26):
         category_page_html = request_html(url=f'{url}{page_num}')
