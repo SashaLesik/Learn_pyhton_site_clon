@@ -1,5 +1,5 @@
 from flask import Flask
-from web_app.models import db, OlxSite
+from web_app.models import db
 from flask import render_template
 from flask_migrate import Migrate
 from web_app.database_functions import extract_from_db

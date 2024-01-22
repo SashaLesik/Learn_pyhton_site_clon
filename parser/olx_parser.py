@@ -1,42 +1,17 @@
 
 import requests
 from bs4 import BeautifulSoup, Tag
-from datetime import datetime, timedelta
+
+from parser.detect_data import parse_register_date
+from parser.detect_data import parse_last_online_date
+from parser.detect_data import parse_published_date
+
 from parser.database import Database
 from parser.schema import Adv
 from parser.logger import logger
 
 
-month_mapping = {'январь': 1,
-                 'февраль': 2,
-                 'март': 3,
-                 'апрель': 4,
-                 'май': 5,
-                 'июнь': 6,
-                 'июль': 7,
-                 'август': 8,
-                 'сентябрь': 9,
-                 'октябрь': 10,
-                 'ноябрь': 11,
-                 'декабрь': 12,
-                 'января': 1,
-                 'февраля': 2,
-                 'марта': 3,
-                 'апреля': 4,
-                 'мая': 5,
-                 'июня': 6,
-                 'июля': 7,
-                 'августа': 8,
-                 'сентября': 9,
-                 'октября': 10,
-                 'ноября': 11,
-                 'декабря': 12}
 
-
-
-def translate_month_to_en(ru_month_name: str) -> int:
-    # Функция перевода месяца с RU на EN
-    return month_mapping[ru_month_name]
 
 
 def parser_category(url, parser_db: Database):
@@ -47,7 +22,7 @@ def parser_category(url, parser_db: Database):
             continue
         adt_urls = extract_adt_urls(category_page_html)
         for adt_url in adt_urls:
-            if parser_db. adv_exists(adt_url):
+            if parser_db.adv_exists(adt_url):
                 continue
             adv_html = request_html(adt_url)
             if adv_html is None:
@@ -71,12 +46,14 @@ def request_html(url) -> str | None:
 def extract_adt_urls(category_page_html: str | None) -> list[str]:
     adt_urls = []
     soup = BeautifulSoup(category_page_html, 'lxml')
-    url_divs = soup.find_all('div', class_='css-1sw7q4x')
+    url_divs = soup.find_all(name='div', class_='css-1sw7q4x')
+    print(url_divs)
     for div in url_divs:
         if not isinstance(div, Tag):
             continue
         try:
-            card_url = div.find('a').get('href')
+            card_url = div.find(name='a', class_='css-rc5s2u').get('href')
+            print(card_url)
             if card_url:
                 if 'https://' in card_url:
                     adt_urls.append(card_url)
@@ -115,52 +92,8 @@ def parser_adt(url: str, adv_html: str) -> Adv | None:
             date_registered=date_registered,
             date_of_last_visit=date_of_last_visit,
             date_posted=date_posted,
-            picture=soup_product_jpg
+            picture_url=soup_product_jpg
         )
+    # print(adv)
     return adv
-
-def parse_register_date(date_time: str | int) -> datetime:
-    #  Дата регистрации пользователя
-    dt_element = date_time.split(' ')
-    month = translate_month_to_en(dt_element[2])
-    year = int(dt_element[3])
-    return datetime(year, month, day=1)
-
-
-def parse_last_online_date(date_time: str) -> datetime:
-    # Дата последнего посещения сайта пользователем
-    date_time = date_time.split(' ')
-    if len(date_time) > 4:
-        day = int(date_time[1])
-        month = translate_month_to_en(date_time[2])
-        year = int(date_time[3])
-        return datetime(year, month, day)
-    elif len(date_time) == 3:
-        hour, minute = date_time[2].split(':')
-        date_of_last_visit = datetime.now().replace(hour=int(hour), minute=int(minute))
-        return date_of_last_visit
-    elif len(date_time) == 4:
-        hour, minute = date_time[3].split(':')
-        day_earlier = datetime.now() - timedelta(days=1)
-        date_of_last_visit = day_earlier.replace(hour=int(hour), minute=int(minute))
-        return date_of_last_visit
-    else:
-        raise Exception
-
-
-def parse_published_date(date_time) -> datetime:
-    # Дата публикации объявления
-    date_time = date_time.split(' ')
-    if date_time[0].isdigit():
-        day = int(date_time[0])
-        month = translate_month_to_en(date_time[1])
-        year = int(date_time[2])
-        published_date = datetime(year, month, day)
-        return published_date
-    elif date_time[0] == 'Сегодня':
-        hour, minute = date_time[2].split(':')
-        published_date = datetime.now().replace(hour=int(hour), minute=int(minute))
-        return published_date
-
-
 
