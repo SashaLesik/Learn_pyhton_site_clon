@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 
-
 month_mapping = {'январь': 1,
                  'февраль': 2,
                  'март': 3,
@@ -25,6 +24,7 @@ month_mapping = {'январь': 1,
                  'октября': 10,
                  'ноября': 11,
                  'декабря': 12}
+
 
 def detect_month_num(dt_element: list[str]) -> int:
     matching_months = set(dt_element).intersection(set(month_mapping.keys()))
