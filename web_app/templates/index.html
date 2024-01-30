@@ -14,7 +14,12 @@
     <div class= 'row'>
         <div class= "col-8">
             <h2> Объявления </h2>
+<<<<<<< HEAD
             {% for ad in ads_list %}
+=======
+            <h4>(Page {{ pagination.page }})</h4>
+            {% for ad in pagination.items %}
+>>>>>>> 531c149babe126f165cf9fa85f815a8a966699d2
             <h3> <a href = "{{ ad.url }}">{{ ad.ads_name }} </a>  </h3>
             <p>{{ ad.ads_content}}</p>
             <p>{{ ad.phone_number}}</p>
