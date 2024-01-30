@@ -11,5 +11,5 @@ PORT = os.getenv('PORT')
 
 SQLALCHEMY_DATABASE_URI = f'postgresql://{DB_USER}:{DB_PASSWORD}@{HOST}:{PORT}/{DB_NAME}'
 
-
+SECRET_KEY = os.getenv('SECRET_KEY')
 
