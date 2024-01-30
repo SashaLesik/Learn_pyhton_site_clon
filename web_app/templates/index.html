@@ -126,6 +126,8 @@
             <h2> Объявления </h2>
             <h4>(Page {{ pagination.page }})</h4>
             {% for ad in pagination.items %}
+            <h4>(Page {{ pagination.page }})</h4>
+            {% for ad in pagination.items %}
             <h3> <a href = "{{ ad.url }}">{{ ad.ads_name }} </a>  </h3>
             <p>{{ ad.ads_content}}</p>
             <p>{{ ad.phone_number}}</p>
