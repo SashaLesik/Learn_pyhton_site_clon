@@ -1,26 +1,33 @@
 from getpass import getpass
 import sys
-
-from web_app import create_app
+import os
+from dotenv import load_dotenv
+from web_app.app import create_app
 from web_app.user.models import User, db
 
-app = create_app()
+load_dotenv()
 
-with app.app_context():
-    username = input('Введите имя пользователя: ')
+admin_name = os.getenv('admin_name')
+admin_pass = os.getenv('admin_pass')
 
-    if User.query.filter(User.username == username).count():
+
+def create_admin(admin_name, admin_pass):
+    if User.query.filter(User.username == admin_name).count():
         print('Такой пользователь уже есть')
         sys.exit(0)
-
-    password = getpass('Введите пароль: ')
-    password2 = getpass('Повторите пароль: ')
-    if not password == password2:
-        sys.exit(0)
         
-    new_user = User(username=username, role='admin')
-    new_user.set_password(password)
+    admin_user = User(username=admin_name, role='admin')
+    admin_pass.set_password(admin_pass)
 
-    db.session.add(new_user)
+    db.session.add(admin_user)
     db.session.commit()
-    print('User with id {} added'.format(new_user.id))
+    print('Admin user with id {} added'.format(admin_user.id))
+
+    if __name__ == '__main__':
+        username = input('Введите имя пользователя: ')
+        password = getpass('Введите пароль: ')
+        password2 = getpass('Повторите пароль: ')
+        if not password == password2:
+            sys.exit(0)
+        with create_app().app_context():
+            create_admin(username, password)

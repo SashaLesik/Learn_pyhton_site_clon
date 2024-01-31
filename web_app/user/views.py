@@ -16,9 +16,6 @@ def login():
     return render_template('login.html', page_title=title, form=login_form)
 
 
-
-
-
 @blueprint.route('/process-login', methods=['POST'])
 def process_login():
     form = LoginForm()
