@@ -24,17 +24,6 @@ services:
         database:
           condition: service_healthy
       command: python start_parsing.py
-
-  create_user:
-      build:
-        dockerfile: Dockerfile
-        context: .
-      env_file:
-      - .env
-      depends_on:
-        database:
-          condition: service_healthy
-      command: python create_admin.py
   database:
     image: postgres:12.17-alpine3.19
     env_file:
