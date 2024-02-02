@@ -15,9 +15,8 @@ def register_page():
     if form.validate():
         username = form.username.data
         password = request.form.get('password')
-        password = generate_password_hash(password)
-
-        new_user = User(username=username, password=password)
+        new_user = User(username=username)
+        new_user.set_password(password)
         
         if User.query.filter(User.username == username).count():
             flash('Такой пользователь уже есть')
