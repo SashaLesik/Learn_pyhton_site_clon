@@ -1,45 +1,35 @@
-from flask import Blueprint, request, session
+from flask import Blueprint, request
 from flask import render_template, flash, redirect, url_for
-from sqlalchemy import Connection
 from web_app.user.forms import LoginForm
 from web_app.user.models import User
 from flask_login import current_user, login_required, login_user, logout_user
-import gc
+from web_app.user.models import db
+import sys
 
 blueprint = Blueprint('user', __name__, url_prefix='/users')
 
 @blueprint.route('/register', methods=["GET", "POST"])
 def register_page():
     form = LoginForm(request.form)
-
-    if request.method == "POST" and form.validate():
-        username = form.username.data
-        password = form.password.data
-        c, conn = Connection()
-
-        x = c.execute("SELECT * FROM users WHERE username = (%s)", (username))
-
-        if int(x) > 0:
-            flash("That username is already taken, please choose another")
-            return render_template('register.html', form=form)
-
-        else:
-            c.execute("INSERT INTO users (username, password, ) VALUES (%s, %s)",
-                      (username, password))
+    if request.method == "GET":
+        process_login()
+        if request.method == "POST" and form.validate():
+            username = form.username.data
+            password = form.password.data
             
-            conn.commit()
-            flash("Thanks for registering!")
-            c.close()
-            conn.close()
-            gc.collect()
+            if User.query.filter(User.username == username).count():
+                print('Такой пользователь уже есть')
+                sys.exit(0)
+            else:  
 
-            session['logged_in'] = True
-            session['username'] = username
-
-            return redirect(url_for('index.html'))
-    title = "Регистрация"
-    return render_template("registration.html", page_title=title,
-                           form=form)
+                db.session.add(username)
+                db.session.add(password)
+                db.session.commit()
+                flash("Thanks for registering!")
+                return redirect(url_for('index.html'))
+        title = "Регистрация"
+        return render_template("registration.html", page_title=title,
+                               form=form)
 
 @blueprint.route('/login')  
 def login():
@@ -51,7 +41,7 @@ def login():
     return render_template('login.html', page_title=title, form=login_form)
 
 
-@blueprint.route('/process-login', methods=['POST'])
+@blueprint.route('/process-login', methods=['GET'])
 def process_login():
     form = LoginForm()
     if form.validate_on_submit():
