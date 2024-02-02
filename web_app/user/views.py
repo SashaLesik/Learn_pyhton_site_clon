@@ -4,32 +4,30 @@ from web_app.user.forms import LoginForm
 from web_app.user.models import User
 from flask_login import current_user, login_required, login_user, logout_user
 from web_app.user.models import db
-import sys
+
 
 blueprint = Blueprint('user', __name__, url_prefix='/users')
 
 @blueprint.route('/register', methods=["GET", "POST"])
 def register_page():
-    form = LoginForm(request.form)
-    if request.method == "GET":
-        process_login()
-        if request.method == "POST" and form.validate():
-            username = form.username.data
-            password = form.password.data
-            
-            if User.query.filter(User.username == username).count():
-                print('Такой пользователь уже есть')
-                sys.exit(0)
-            else:  
+    form = LoginForm()
+    if form.validate():
+        username = form.username.data
+        password = form.password.data
 
-                db.session.add(username)
-                db.session.add(password)
-                db.session.commit()
-                flash("Thanks for registering!")
-                return redirect(url_for('index.html'))
-        title = "Регистрация"
-        return render_template("registration.html", page_title=title,
-                               form=form)
+        new_user = User(username=username, password=password)
+        
+        if User.query.filter(User.username == username).count():
+            flash('Такой пользователь уже есть')
+            return redirect(url_for('register'))
+        else:
+            db.session.add(new_user)
+            db.session.commit()
+            flash("Thanks for registering!")
+            return redirect(url_for('index'))
+    title = "Регистрация"
+    return render_template("registration.html", page_title=title,
+                           form=form)
 
 @blueprint.route('/login')  
 def login():
@@ -41,7 +39,7 @@ def login():
     return render_template('login.html', page_title=title, form=login_form)
 
 
-@blueprint.route('/process-login', methods=['GET'])
+@blueprint.route('/process-login', methods=['GET|POST'])
 def process_login():
     form = LoginForm()
     if form.validate_on_submit():

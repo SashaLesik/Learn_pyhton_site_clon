@@ -10,7 +10,7 @@
     {% endif %}
 {% endwith %}
 <div class= "col-4">
-    <form action="{{ url_for('user.process_login') }}" method="GET|POST">
+    <form action="{{ url_for('user.register') }}" method="GET|POST">
         <div class="form-group">
             {{ form.username.label }}
             {{ form.username() }}
