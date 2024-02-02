@@ -14,11 +14,10 @@ def register_page():
     form = LoginForm()
     if form.validate():
         username = form.username.data
-        password = request.form.get('password')
-        password = generate_password_hash(password)
+        password = form.password.data
+        new_user = User(username=username)
+        new_user.set_password(password)
 
-        new_user = User(username=username, password=password)
-        
         if User.query.filter(User.username == username).count():
             flash('Такой пользователь уже есть')
             return redirect(url_for('register'))
