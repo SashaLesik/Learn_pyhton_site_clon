@@ -1,12 +1,14 @@
 from flask_login import UserMixin
 from web_app.models import db
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_migrate import Migrate
 
+migrate = Migrate(db)
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
-    password = db.Column(db.String(128))
+    password = db.Column(db.String(500))
     role = db.Column(db.String(10), index=True)
 
     def set_password(self, password):

@@ -1,8 +1,9 @@
-from flask import Blueprint
+from flask import Blueprint, request
 from flask import render_template, flash, redirect, url_for
 from web_app.user.forms import LoginForm
 from web_app.user.models import User
 from flask_login import current_user, login_required, login_user, logout_user
+from werkzeug.security import generate_password_hash, check_password_hash
 from web_app.user.models import db
 
 
@@ -13,7 +14,8 @@ def register_page():
     form = LoginForm()
     if form.validate():
         username = form.username.data
-        password = form.password.data
+        password = request.form.get('password')
+        password = generate_password_hash(password)
 
         new_user = User(username=username, password=password)
         
