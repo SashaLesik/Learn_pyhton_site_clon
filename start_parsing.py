@@ -1,7 +1,7 @@
 from parser.olx_parser import parser_category
 from parser.database import Database
 from web_app.app import create_app
-from web_app.models import db, OlxSite
+from web_app.adverts.models import db, OlxSite
 
 
 if __name__ == '__main__':

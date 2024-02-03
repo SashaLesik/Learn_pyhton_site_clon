@@ -22,4 +22,3 @@ class OlxSite(db.Model):
 
     def __repr__(self):
         return f'<Ads {self.name} {self.content}>'
-
