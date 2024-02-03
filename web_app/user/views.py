@@ -24,7 +24,7 @@ def register_page():
             db.session.add(new_user)
             db.session.commit()
             flash("Thanks for registering!")
-            return redirect(url_for('main'))
+            return redirect(url_for('adverts'))
     title = "Регистрация"
     return render_template("registration.html", page_title=title,
                            form=form)
@@ -48,7 +48,7 @@ def process_login():
         if user and user.check_password(form.password.data):
             login_user(user)
             flash('Вы вошли на сайт')
-            return redirect(url_for('main'))
+            return redirect(url_for('adverts'))
     flash('Неправильное имя пользователя или пароль')
     return redirect(url_for('user.login'))
 
