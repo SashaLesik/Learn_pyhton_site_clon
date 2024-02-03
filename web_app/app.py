@@ -18,7 +18,7 @@ def create_app():
         db.create_all()
         app.register_blueprint(user_blueprint)
     migrate = Migrate(app, db, command='migrate')
-        
+
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = 'user.login'
@@ -28,9 +28,7 @@ def create_app():
         return User.query.get(user_id)
 
     @app.route('/')
-
     def main():
         return render_template('main.html')
-
 
     return app

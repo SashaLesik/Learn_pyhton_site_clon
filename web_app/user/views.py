@@ -5,8 +5,8 @@ from web_app.user.models import User
 from flask_login import current_user, login_required, login_user, logout_user
 from web_app.user.models import db
 
+blueprint = Blueprint('user', __name__)
 
-blueprint = Blueprint('user', __name__, url_prefix='/users')
 
 @blueprint.route('/register', methods=["GET", "POST"])
 def register_page():
@@ -30,9 +30,7 @@ def register_page():
                            form=form)
 
 
-
-
-@blueprint.route('/login')  
+@blueprint.route('/login')
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('main'))
