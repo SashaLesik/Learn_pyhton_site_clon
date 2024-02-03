@@ -1,9 +1,8 @@
-from flask import Blueprint, request
+from flask import Blueprint
 from flask import render_template, flash, redirect, url_for
 from web_app.user.forms import LoginForm
 from web_app.user.models import User
 from flask_login import current_user, login_required, login_user, logout_user
-from werkzeug.security import generate_password_hash, check_password_hash
 from web_app.user.models import db
 
 
@@ -25,7 +24,7 @@ def register_page():
             db.session.add(new_user)
             db.session.commit()
             flash("Thanks for registering!")
-            return redirect(url_for('index'))
+            return redirect(url_for('main'))
     title = "Регистрация"
     return render_template("registration.html", page_title=title,
                            form=form)
@@ -36,7 +35,7 @@ def register_page():
 @blueprint.route('/login')  
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('main'))
     title = "Авторизация"
 
     login_form = LoginForm()
@@ -51,7 +50,7 @@ def process_login():
         if user and user.check_password(form.password.data):
             login_user(user)
             flash('Вы вошли на сайт')
-            return redirect(url_for('index'))
+            return redirect(url_for('main'))
     flash('Неправильное имя пользователя или пароль')
     return redirect(url_for('user.login'))
 
