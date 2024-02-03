@@ -1,7 +1,5 @@
-from web_app.models import OlxSite
+from web_app.adverts.models import OlxSite
 from sqlalchemy import desc
-
-
 
 
 def extract_from_db():
@@ -9,5 +7,3 @@ def extract_from_db():
     ads_list = OlxSite.query.order_by(desc(OlxSite.date_posted))
 
     return ads_list
-
-
